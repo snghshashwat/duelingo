@@ -1,0 +1,85 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Light mode (default) */
+body {
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu",
+    "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: #0f172a;
+  background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+  transition:
+    background 0.3s ease,
+    color 0.3s ease;
+}
+
+/* Dark mode */
+.dark {
+  color: #e2e8f0;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+}
+
+.dark body {
+  color: #e2e8f0;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+}
+
+.btn-primary {
+  @apply px-6 py-3 bg-emerald-600 text-white font-semibold rounded-lg hover:bg-emerald-700 transition duration-200;
+}
+
+.dark .btn-primary {
+  @apply bg-blue-600 hover:bg-blue-700;
+}
+
+.btn-secondary {
+  @apply px-6 py-3 bg-white text-slate-700 font-semibold rounded-lg border border-slate-300 hover:bg-slate-50 transition duration-200;
+}
+
+.dark .btn-secondary {
+  @apply bg-slate-700 text-slate-100 border-slate-600 hover:bg-slate-600;
+}
+
+.card {
+  @apply bg-white rounded-2xl shadow-md p-6 border border-slate-200 transition-colors;
+}
+
+.dark .card {
+  @apply bg-slate-800 border-slate-700;
+}
+
+.input-field {
+  @apply w-full px-4 py-2 bg-white text-slate-800 rounded-lg border border-slate-300 focus:outline-none focus:border-emerald-500 transition;
+}
+
+.dark .input-field {
+  @apply bg-slate-700 text-slate-100 border-slate-600 focus:border-blue-500;
+}
+
+.text-primary {
+  @apply text-emerald-600;
+}
+
+.text-primary.dark {
+  @apply text-blue-400;
+}
+
+.bg-gradient-duelingo {
+  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #0ea5e9 100%);
+}
+
+.text-gradient-duelingo {
+  background: linear-gradient(135deg, #fbbf24 0%, #f97316 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}

@@ -58,6 +58,33 @@ function Toast({ toast, isDarkMode }) {
       <div className="flex-1 min-w-0">
         {toast.title && <p className="font-semibold text-sm">{toast.title}</p>}
         <p className="text-sm break-words">{toast.message}</p>
+
+        {Array.isArray(toast.actions) && toast.actions.length > 0 && (
+          <div className="mt-3 flex gap-2 flex-wrap">
+            {toast.actions.map((action, idx) => (
+              <button
+                key={`${toast.id}-action-${idx}`}
+                onClick={() => {
+                  action.onClick?.();
+                  if (action.closeOnClick !== false) {
+                    removeToast(toast.id);
+                  }
+                }}
+                className={`px-3 py-1.5 rounded text-xs font-semibold transition ${
+                  action.variant === "danger"
+                    ? isDarkMode
+                      ? "bg-red-800 hover:bg-red-700 text-red-100"
+                      : "bg-red-100 hover:bg-red-200 text-red-800"
+                    : isDarkMode
+                      ? "bg-emerald-700 hover:bg-emerald-600 text-emerald-100"
+                      : "bg-emerald-100 hover:bg-emerald-200 text-emerald-800"
+                }`}
+              >
+                {action.label}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
       <button
         onClick={() => removeToast(toast.id)}

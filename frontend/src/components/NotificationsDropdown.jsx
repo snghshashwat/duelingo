@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuthStore, useGameStore } from "../store/gameStore";
 import { userAPI } from "../api/client";
 import { respondToChallenge } from "../api/socket";
+import { Bell } from "lucide-react";
 
 export default function NotificationsDropdown() {
   const navigate = useNavigate();
@@ -134,6 +135,19 @@ export default function NotificationsDropdown() {
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
+  const isActionResolved = (notification) => {
+    const state = actionStates[notification._id];
+    if (state === "accepted" || state === "declined") {
+      return true;
+    }
+
+    return (
+      notification.read &&
+      (notification.type === "friend_request" ||
+        notification.type === "challenge")
+    );
+  };
+
   return (
     <div className="relative" ref={dropdownRef}>
       <button
@@ -145,7 +159,7 @@ export default function NotificationsDropdown() {
         }`}
         title="Notifications"
       >
-        <span className="text-lg sm:text-xl">🔔</span>
+        <Bell size={20} strokeWidth={2.4} />
         {unreadCount > 0 && (
           <span
             className={`absolute top-1 right-1 text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center ${
@@ -256,38 +270,44 @@ export default function NotificationsDropdown() {
                       >
                         {notification.fromUsername} sent you a friend request
                       </p>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() =>
-                            handleAcceptFriendRequest(notification)
-                          }
-                          disabled={
-                            loading || Boolean(actionStates[notification._id])
-                          }
-                          className={`flex-1 px-3 py-1 rounded text-sm font-semibold transition ${
-                            isDarkMode
-                              ? "bg-green-700 hover:bg-green-600 text-green-100"
-                              : "bg-green-600 hover:bg-green-700 text-white"
+                      {isActionResolved(notification) ? (
+                        <p
+                          className={`text-xs font-semibold ${
+                            isDarkMode ? "text-slate-400" : "text-slate-500"
                           }`}
                         >
-                          Accept
-                        </button>
-                        <button
-                          onClick={() =>
-                            handleDeclineFriendRequest(notification)
-                          }
-                          disabled={
-                            loading || Boolean(actionStates[notification._id])
-                          }
-                          className={`flex-1 px-3 py-1 rounded text-sm font-semibold transition ${
-                            isDarkMode
-                              ? "bg-slate-600 hover:bg-slate-500 text-slate-100"
-                              : "bg-slate-300 hover:bg-slate-400 text-slate-700"
-                          }`}
-                        >
-                          Decline
-                        </button>
-                      </div>
+                          Request already handled
+                        </p>
+                      ) : (
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() =>
+                              handleAcceptFriendRequest(notification)
+                            }
+                            disabled={loading}
+                            className={`flex-1 px-3 py-1 rounded text-sm font-semibold transition ${
+                              isDarkMode
+                                ? "bg-green-700 hover:bg-green-600 text-green-100"
+                                : "bg-green-600 hover:bg-green-700 text-white"
+                            }`}
+                          >
+                            Accept
+                          </button>
+                          <button
+                            onClick={() =>
+                              handleDeclineFriendRequest(notification)
+                            }
+                            disabled={loading}
+                            className={`flex-1 px-3 py-1 rounded text-sm font-semibold transition ${
+                              isDarkMode
+                                ? "bg-slate-600 hover:bg-slate-500 text-slate-100"
+                                : "bg-slate-300 hover:bg-slate-400 text-slate-700"
+                            }`}
+                          >
+                            Decline
+                          </button>
+                        </div>
+                      )}
                     </div>
                   )}
 
@@ -312,34 +332,40 @@ export default function NotificationsDropdown() {
                           : "Match Pairs"}{" "}
                         match
                       </p>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handleAcceptChallenge(notification)}
-                          disabled={
-                            loading || Boolean(actionStates[notification._id])
-                          }
-                          className={`flex-1 px-3 py-1 rounded text-sm font-semibold transition ${
-                            isDarkMode
-                              ? "bg-purple-700 hover:bg-purple-600 text-purple-100"
-                              : "bg-purple-600 hover:bg-purple-700 text-white"
+                      {isActionResolved(notification) ? (
+                        <p
+                          className={`text-xs font-semibold ${
+                            isDarkMode ? "text-slate-400" : "text-slate-500"
                           }`}
                         >
-                          Accept
-                        </button>
-                        <button
-                          onClick={() => handleDeclineChallenge(notification)}
-                          disabled={
-                            loading || Boolean(actionStates[notification._id])
-                          }
-                          className={`flex-1 px-3 py-1 rounded text-sm font-semibold transition ${
-                            isDarkMode
-                              ? "bg-slate-600 hover:bg-slate-500 text-slate-100"
-                              : "bg-slate-300 hover:bg-slate-400 text-slate-700"
-                          }`}
-                        >
-                          Decline
-                        </button>
-                      </div>
+                          Challenge already handled
+                        </p>
+                      ) : (
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleAcceptChallenge(notification)}
+                            disabled={loading}
+                            className={`flex-1 px-3 py-1 rounded text-sm font-semibold transition ${
+                              isDarkMode
+                                ? "bg-purple-700 hover:bg-purple-600 text-purple-100"
+                                : "bg-purple-600 hover:bg-purple-700 text-white"
+                            }`}
+                          >
+                            Accept
+                          </button>
+                          <button
+                            onClick={() => handleDeclineChallenge(notification)}
+                            disabled={loading}
+                            className={`flex-1 px-3 py-1 rounded text-sm font-semibold transition ${
+                              isDarkMode
+                                ? "bg-slate-600 hover:bg-slate-500 text-slate-100"
+                                : "bg-slate-300 hover:bg-slate-400 text-slate-700"
+                            }`}
+                          >
+                            Decline
+                          </button>
+                        </div>
+                      )}
                     </div>
                   )}
 

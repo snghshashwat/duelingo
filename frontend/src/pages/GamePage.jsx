@@ -221,60 +221,66 @@ export default function GamePage() {
 
   if (isWaiting && !currentQuestion && !pairsRound) {
     return (
-      <div className="flex items-center justify-center min-h-screen px-3 sm:px-4">
-        <div className="card text-center max-w-xl w-full">
-          {pendingMode === "friend" ? (
-            <>
-              <h1 className="text-2xl sm:text-3xl font-bold mb-4">
-                Waiting for friend...
-              </h1>
-              <p className="text-slate-500 mb-6">
-                Your challenge has been sent.
-              </p>
-            </>
-          ) : (
-            <>
-              <h1 className="text-2xl sm:text-3xl font-bold mb-4">
-                Finding opponent...
-              </h1>
-              <p className="text-slate-500 mb-6">
-                Searching matchmaking queue.
-              </p>
-            </>
-          )}
+      <div className="relative min-h-screen overflow-hidden px-3 sm:px-4">
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-indigo-950 to-sky-950" />
+        <div className="absolute -top-20 -left-16 h-72 w-72 rounded-full bg-cyan-400/20 blur-3xl float-slow" />
+        <div className="absolute -bottom-24 right-0 h-80 w-80 rounded-full bg-fuchsia-400/15 blur-3xl float-reverse" />
 
-          {player1?.username && player2?.username && (
-            <div className="mb-6">
-              <p className="text-sm text-slate-500">Matched</p>
-              <p className="text-base sm:text-xl font-semibold break-words">
-                {player1.username} vs {player2.username}
-              </p>
-            </div>
-          )}
-
-          {transitionCountdown && transitionCountdown > 0 ? (
-            <div className="text-5xl font-extrabold text-emerald-600 animate-pulse">
-              {transitionCountdown}
-            </div>
-          ) : (
-            <div className="animate-pulse flex justify-center gap-1">
-              <div className="w-3 h-3 bg-emerald-500 rounded-full"></div>
-              <div className="w-3 h-3 bg-emerald-500 rounded-full"></div>
-              <div className="w-3 h-3 bg-emerald-500 rounded-full"></div>
-            </div>
-          )}
-
-          {transitionCountdown === 0 && (
-            <p className="text-emerald-600 mt-4">Starting now...</p>
-          )}
-
-          <div className="mt-8">
-            {matchmakingError && (
-              <p className="text-red-500 mb-4">{matchmakingError}</p>
+        <div className="relative z-10 flex items-center justify-center min-h-screen">
+          <div className="text-center max-w-xl w-full rounded-3xl border border-white/20 bg-black/30 p-6 shadow-2xl backdrop-blur-lg">
+            {pendingMode === "friend" ? (
+              <>
+                <h1 className="text-2xl sm:text-3xl font-bold mb-4 text-white">
+                  Waiting for friend...
+                </h1>
+                <p className="text-slate-200 mb-6">
+                  Your challenge has been sent.
+                </p>
+              </>
+            ) : (
+              <>
+                <h1 className="text-2xl sm:text-3xl font-bold mb-4 text-white">
+                  Finding opponent...
+                </h1>
+                <p className="text-slate-200 mb-6">
+                  Searching matchmaking queue.
+                </p>
+              </>
             )}
-            <button className="btn-secondary" onClick={() => navigate("/")}>
-              Back to Dashboard
-            </button>
+
+            {player1?.username && player2?.username && (
+              <div className="mb-6">
+                <p className="text-sm text-slate-300">Matched</p>
+                <p className="text-base sm:text-xl font-semibold break-words text-white">
+                  {player1.username} vs {player2.username}
+                </p>
+              </div>
+            )}
+
+            {transitionCountdown && transitionCountdown > 0 ? (
+              <div className="text-5xl font-extrabold text-emerald-600 animate-pulse">
+                {transitionCountdown}
+              </div>
+            ) : (
+              <div className="animate-pulse flex justify-center gap-1">
+                <div className="w-3 h-3 bg-emerald-500 rounded-full"></div>
+                <div className="w-3 h-3 bg-emerald-500 rounded-full"></div>
+                <div className="w-3 h-3 bg-emerald-500 rounded-full"></div>
+              </div>
+            )}
+
+            {transitionCountdown === 0 && (
+              <p className="text-emerald-300 mt-4">Starting now...</p>
+            )}
+
+            <div className="mt-8">
+              {matchmakingError && (
+                <p className="text-red-500 mb-4">{matchmakingError}</p>
+              )}
+              <button className="btn-secondary" onClick={() => navigate("/")}>
+                Back to Dashboard
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -282,38 +288,42 @@ export default function GamePage() {
   }
 
   return (
-    <div className="min-h-screen p-3 sm:p-4">
-      <div className="max-w-5xl mx-auto">
+    <div className="relative min-h-screen overflow-hidden p-3 sm:p-4">
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-indigo-950 to-sky-950" />
+      <div className="absolute -top-28 -left-20 h-80 w-80 rounded-full bg-cyan-400/15 blur-3xl float-slow" />
+      <div className="absolute -bottom-24 right-4 h-80 w-80 rounded-full bg-fuchsia-400/12 blur-3xl float-reverse" />
+
+      <div className="relative z-10 max-w-5xl mx-auto">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
-          <div className="card text-center">
-            <p className="text-sm text-slate-500">Player 1</p>
-            <p className="text-base sm:text-xl font-bold text-sky-600 break-words">
+          <div className="rounded-2xl border border-white/20 bg-black/30 p-4 text-center shadow-xl backdrop-blur">
+            <p className="text-base font-bold text-slate-200">Player 1</p>
+            <p className="text-lg sm:text-2xl font-extrabold text-cyan-200 break-words">
               {player1?.username}
             </p>
           </div>
-          <div className="card text-center">
-            <p className="text-sm text-slate-500">Score</p>
-            <p className="text-xl font-bold">
+          <div className="rounded-2xl border border-white/20 bg-black/30 p-4 text-center shadow-xl backdrop-blur">
+            <p className="text-base font-bold text-slate-200">Score</p>
+            <p className="text-2xl font-extrabold text-white">
               {scores.player1} - {scores.player2}
             </p>
           </div>
-          <div className="card text-center">
-            <p className="text-sm text-slate-500">Player 2</p>
-            <p className="text-base sm:text-xl font-bold text-rose-600 break-words">
+          <div className="rounded-2xl border border-white/20 bg-black/30 p-4 text-center shadow-xl backdrop-blur">
+            <p className="text-base font-bold text-slate-200">Player 2</p>
+            <p className="text-lg sm:text-2xl font-extrabold text-rose-200 break-words">
               {player2?.username}
             </p>
           </div>
-          <div className="card text-center">
-            <p className="text-sm text-slate-500">Mode</p>
-            <p className="text-sm font-semibold">
+          <div className="rounded-2xl border border-white/20 bg-black/30 p-4 text-center shadow-xl backdrop-blur">
+            <p className="text-base font-bold text-slate-200">Mode</p>
+            <p className="text-base font-bold text-white">
               {isQuizMode ? "Quiz Sprint" : "Match the Following"}
             </p>
             {isQuizMode ? (
-              <p className="text-xl sm:text-2xl font-bold text-emerald-600">
+              <p className="text-2xl sm:text-3xl font-extrabold text-emerald-300">
                 {sprintTimeLeft}s
               </p>
             ) : (
-              <p className="text-xl sm:text-2xl font-bold text-indigo-600">
+              <p className="text-2xl sm:text-3xl font-extrabold text-indigo-100">
                 R{pairsRound || 1}/5
               </p>
             )}
@@ -321,17 +331,17 @@ export default function GamePage() {
         </div>
 
         {isQuizMode && currentQuestion && (
-          <div className="card mb-6">
+          <div className="mb-6 rounded-3xl border border-white/20 bg-black/30 p-6 shadow-2xl backdrop-blur">
             <div className="flex justify-between items-center mb-4">
-              <p className="text-slate-500">
+              <p className="text-base font-bold text-slate-200">
                 Question #{currentQuestionIndex + 1}
               </p>
-              <p className="text-slate-700 font-semibold">
+              <p className="text-lg text-white font-bold">
                 Your correct: {myScore}
               </p>
             </div>
 
-            <h2 className="text-xl sm:text-2xl font-bold mb-6">
+            <h2 className="text-3xl sm:text-4xl font-extrabold mb-6 text-white leading-tight">
               {currentQuestion.question}
             </h2>
 
@@ -341,13 +351,13 @@ export default function GamePage() {
                   key={index}
                   onClick={() => handleSubmitQuizAnswer(option)}
                   disabled={Boolean(quizSelectedOption)}
-                  className={`p-3 sm:p-4 text-sm sm:text-base rounded-lg font-semibold border transition ${
+                  className={`p-3 sm:p-4 text-lg sm:text-xl rounded-lg font-extrabold border transition ${
                     quizSelectedOption === option && quizFeedback === "correct"
-                      ? "answer-correct border-emerald-500 bg-emerald-50"
+                      ? "answer-correct border-emerald-500 bg-emerald-50 text-emerald-900"
                       : quizSelectedOption === option &&
                           quizFeedback === "wrong"
-                        ? "answer-wrong border-red-500 bg-red-50"
-                        : "border-slate-300 bg-white hover:bg-emerald-50 hover:border-emerald-400"
+                        ? "answer-wrong border-red-500 bg-red-50 text-red-900"
+                        : "border-slate-300 bg-white text-slate-900 hover:bg-emerald-50 hover:border-emerald-400"
                   } ${quizSelectedOption ? "cursor-not-allowed" : ""}`}
                 >
                   {option}
@@ -358,19 +368,21 @@ export default function GamePage() {
         )}
 
         {isPairsMode && (
-          <div className="card mb-6">
+          <div className="mb-6 rounded-3xl border border-white/20 bg-black/30 p-6 shadow-2xl backdrop-blur">
             <div className="flex flex-wrap justify-between gap-3 items-center mb-6">
-              <p className="text-slate-500">
+              <p className="text-base font-bold text-slate-200">
                 Round {pairsRound || 1} of {totalPairsRounds}
               </p>
-              <p className="text-slate-700 font-semibold">
+              <p className="text-lg text-white font-bold">
                 Your score: {myScore}
               </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <h3 className="font-semibold text-slate-700 mb-3">English</h3>
+                <h3 className="text-lg font-extrabold text-cyan-200 mb-3">
+                  English
+                </h3>
                 <div className="space-y-2">
                   {(currentQuestion?.englishWords || []).map((word) => {
                     const isMatched = matchedEnglish.includes(word);
@@ -380,18 +392,18 @@ export default function GamePage() {
                         key={word}
                         disabled={isMatched}
                         onClick={() => setSelectedEnglish(word)}
-                        className={`w-full text-left px-4 py-2 rounded-lg border transition ${
+                        className={`w-full text-left px-4 py-2 rounded-lg border text-base font-bold transition ${
                           isMatched
                             ? "bg-emerald-100 border-emerald-200 text-emerald-700 cursor-not-allowed"
                             : pairsFeedback?.englishWord === word &&
                                 pairsFeedback?.isCorrect
-                              ? "answer-correct border-emerald-500 bg-emerald-50"
+                              ? "answer-correct border-emerald-500 bg-emerald-50 text-emerald-900"
                               : pairsFeedback?.englishWord === word &&
                                   pairsFeedback?.isCorrect === false
-                                ? "answer-wrong border-red-500 bg-red-50"
+                                ? "answer-wrong border-red-500 bg-red-50 text-red-900"
                                 : isSelected
-                                  ? "bg-sky-100 border-sky-400"
-                                  : "bg-white border-slate-300 hover:bg-sky-50"
+                                  ? "bg-sky-100 border-sky-400 text-sky-900"
+                                  : "bg-white border-slate-300 text-slate-900 hover:bg-sky-50"
                         }`}
                       >
                         {word}
@@ -402,7 +414,9 @@ export default function GamePage() {
               </div>
 
               <div>
-                <h3 className="font-semibold text-slate-700 mb-3">Italian</h3>
+                <h3 className="text-lg font-extrabold text-rose-200 mb-3">
+                  Italian
+                </h3>
                 <div className="space-y-2">
                   {(currentQuestion?.italianWords || []).map((word) => {
                     const isMatched = matchedItalian.includes(word);
@@ -412,18 +426,18 @@ export default function GamePage() {
                         key={word}
                         disabled={isMatched}
                         onClick={() => setSelectedItalian(word)}
-                        className={`w-full text-left px-4 py-2 rounded-lg border transition ${
+                        className={`w-full text-left px-4 py-2 rounded-lg border text-base font-bold transition ${
                           isMatched
                             ? "bg-violet-100 border-violet-200 text-violet-700 cursor-not-allowed"
                             : pairsFeedback?.italianWord === word &&
                                 pairsFeedback?.isCorrect
-                              ? "answer-correct border-emerald-500 bg-emerald-50"
+                              ? "answer-correct border-emerald-500 bg-emerald-50 text-emerald-900"
                               : pairsFeedback?.italianWord === word &&
                                   pairsFeedback?.isCorrect === false
-                                ? "answer-wrong border-red-500 bg-red-50"
+                                ? "answer-wrong border-red-500 bg-red-50 text-red-900"
                                 : isSelected
-                                  ? "bg-amber-100 border-amber-400"
-                                  : "bg-white border-slate-300 hover:bg-amber-50"
+                                  ? "bg-amber-100 border-amber-400 text-amber-900"
+                                  : "bg-white border-slate-300 text-slate-900 hover:bg-amber-50"
                         }`}
                       >
                         {word}
@@ -434,16 +448,16 @@ export default function GamePage() {
               </div>
             </div>
 
-            <p className="text-sm mt-4 text-slate-500">
+            <p className="text-base mt-4 text-slate-200 font-semibold">
               Select one English word and one Italian word. Correct = +1, wrong
               = -1.
             </p>
             {lastAttemptFeedback && (
               <p
-                className={`text-sm mt-2 ${
+                className={`text-base font-bold mt-2 ${
                   lastAttemptFeedback.includes("Correct")
-                    ? "text-emerald-600"
-                    : "text-red-500"
+                    ? "text-emerald-300"
+                    : "text-red-300"
                 }`}
               >
                 {lastAttemptFeedback}

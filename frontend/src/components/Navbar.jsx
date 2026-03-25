@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/gameStore";
 import NotificationsDropdown from "./NotificationsDropdown";
+import { Trophy, Users, LogOut, Sun, Moon, Menu, X } from "lucide-react";
 
 export default function Navbar({ onLogout }) {
   const navigate = useNavigate();
@@ -18,21 +19,21 @@ export default function Navbar({ onLogout }) {
     <nav
       className={`sticky top-0 z-40 ${
         isDarkMode
-          ? "bg-slate-800/90 border-slate-700"
-          : "bg-white/90 border-slate-200"
-      } backdrop-blur border-b transition-colors`}
+          ? "bg-slate-900/85 border-slate-700"
+          : "bg-white/85 border-slate-200"
+      } backdrop-blur-xl border-b transition-all duration-300`}
     >
       <div className="max-w-7xl mx-auto px-3 sm:px-4 py-3 md:flex md:items-center md:justify-between md:gap-4">
         {/* Logo & Brand */}
         <div className="flex items-center justify-between gap-3 md:justify-start">
           <div
             onClick={() => goTo("/")}
-            className="text-xl sm:text-2xl font-bold cursor-pointer flex items-center gap-3 hover:opacity-90 transition"
+            className="text-2xl sm:text-3xl font-bold cursor-pointer flex items-center gap-3 hover:opacity-90 transition"
           >
             <img
               src="/logo.png"
               alt="Duelingo"
-              className="h-8 w-8 sm:h-9 sm:w-9 rounded-md object-contain"
+              className="h-11 w-11 sm:h-12 sm:w-12 rounded-md object-contain"
             />
             <span
               className={`${isDarkMode ? "text-blue-400" : "text-emerald-600"}`}
@@ -51,7 +52,7 @@ export default function Navbar({ onLogout }) {
             }`}
             aria-label="Toggle menu"
           >
-            {isMenuOpen ? "✕" : "☰"}
+            {isMenuOpen ? <X size={18} /> : <Menu size={18} />}
           </button>
         </div>
 
@@ -61,20 +62,26 @@ export default function Navbar({ onLogout }) {
         >
           <button
             onClick={() => goTo("/leaderboard")}
-            className={`text-sm sm:text-base px-3 py-2 rounded-lg ${
-              isDarkMode ? "hover:bg-slate-700" : "hover:bg-slate-100"
-            } hover:${isDarkMode ? "text-blue-400" : "text-emerald-600"} transition`}
+            className={`text-sm sm:text-base font-semibold px-3 py-2 rounded-lg transition-all duration-300 flex items-center gap-2 ${
+              isDarkMode
+                ? "hover:bg-slate-800 text-slate-200 hover:text-cyan-300"
+                : "hover:bg-slate-100 text-slate-700 hover:text-emerald-700"
+            }`}
           >
-            🏆 Leaderboard
+            <Trophy size={20} />
+            <span>Leaderboard</span>
           </button>
 
           <button
             onClick={() => goTo("/friends")}
-            className={`text-sm sm:text-base px-3 py-2 rounded-lg ${
-              isDarkMode ? "hover:bg-slate-700" : "hover:bg-slate-100"
-            } hover:${isDarkMode ? "text-blue-400" : "text-emerald-600"} transition`}
+            className={`text-sm sm:text-base font-semibold px-3 py-2 rounded-lg transition-all duration-300 flex items-center gap-2 ${
+              isDarkMode
+                ? "hover:bg-slate-800 text-slate-200 hover:text-cyan-300"
+                : "hover:bg-slate-100 text-slate-700 hover:text-emerald-700"
+            }`}
           >
-            👥 Friends
+            <Users size={20} />
+            <span>Friends</span>
           </button>
 
           {/* Notifications Dropdown */}
@@ -83,9 +90,10 @@ export default function Navbar({ onLogout }) {
           {/* Profile Section - Click together */}
           <button
             onClick={() => goTo("/profile")}
+            title={user?.username}
             className={`flex items-center gap-2 px-3 py-2 rounded-lg hover:${
               isDarkMode ? "bg-slate-700" : "bg-slate-100"
-            } transition`}
+            } transition-all duration-300`}
           >
             <div
               className={`h-8 w-8 rounded-full overflow-hidden ring-2 ${
@@ -112,7 +120,7 @@ export default function Navbar({ onLogout }) {
               )}
             </div>
             <span
-              className={`max-w-[90px] truncate text-sm sm:text-base ${isDarkMode ? "text-slate-200" : "text-slate-700"}`}
+              className={`max-w-[120px] break-all leading-tight text-sm sm:text-base ${isDarkMode ? "text-slate-200" : "text-slate-700"}`}
             >
               {user?.username}
             </span>
@@ -126,9 +134,11 @@ export default function Navbar({ onLogout }) {
           {/* Dark Mode Toggle */}
           <button
             onClick={toggleDarkMode}
-            className={`text-xl sm:text-2xl hover:opacity-70 transition px-2 py-1`}
+            className={`text-xl sm:text-2xl hover:opacity-80 transition-all duration-300 px-2 py-1 rounded-lg ${
+              isDarkMode ? "hover:bg-slate-800" : "hover:bg-slate-100"
+            }`}
           >
-            {isDarkMode ? "☀️" : "🌙"}
+            {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
           </button>
 
           {/* Logout */}
@@ -140,7 +150,10 @@ export default function Navbar({ onLogout }) {
                 : "bg-red-100 hover:bg-red-200 text-red-700"
             }`}
           >
-            Logout
+            <span className="inline-flex items-center gap-2">
+              <LogOut size={16} />
+              Logout
+            </span>
           </button>
         </div>
 
@@ -161,7 +174,10 @@ export default function Navbar({ onLogout }) {
                   : "hover:bg-slate-100 text-slate-700"
               }`}
             >
-              🏆 Leaderboard
+              <span className="inline-flex items-center gap-2 font-semibold">
+                <Trophy size={16} />
+                Leaderboard
+              </span>
             </button>
             <button
               onClick={() => goTo("/friends")}
@@ -171,7 +187,10 @@ export default function Navbar({ onLogout }) {
                   : "hover:bg-slate-100 text-slate-700"
               }`}
             >
-              👥 Friends
+              <span className="inline-flex items-center gap-2 font-semibold">
+                <Users size={16} />
+                Friends
+              </span>
             </button>
             <button
               onClick={() => goTo("/profile")}
@@ -223,7 +242,10 @@ export default function Navbar({ onLogout }) {
                     : "bg-slate-100 text-slate-700"
                 }`}
               >
-                {isDarkMode ? "☀️ Light" : "🌙 Dark"}
+                <span className="inline-flex items-center gap-2 font-semibold">
+                  {isDarkMode ? <Sun size={16} /> : <Moon size={16} />}
+                  {isDarkMode ? "Light" : "Dark"}
+                </span>
               </button>
               <button
                 onClick={onLogout}
@@ -233,7 +255,10 @@ export default function Navbar({ onLogout }) {
                     : "bg-red-100 text-red-700"
                 }`}
               >
-                Logout
+                <span className="inline-flex items-center gap-2">
+                  <LogOut size={16} />
+                  Logout
+                </span>
               </button>
             </div>
           </div>

@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/gameStore";
 import { useGameStore } from "../store/gameStore";
@@ -7,6 +7,7 @@ import {
   initializeSocket,
   onChallengeReceived,
   onChallengeAccepted,
+  respondToChallenge,
   offAll,
 } from "../api/socket";
 import { userAPI } from "../api/client";
@@ -17,6 +18,7 @@ export default function NotificationListener() {
   const { setWaiting, setGameStatus, setPendingMode, setGameType } =
     useGameStore();
   const { addToast } = useToastStore();
+  const shownChallengeNotifications = useRef(new Set());
 
   useEffect(() => {
     if (!user) return;
@@ -26,12 +28,35 @@ export default function NotificationListener() {
 
     // Listen for incoming challenges
     onChallengeReceived((data) => {
+      const gameType = data?.gameType || "QUIZ_SPRINT";
       addToast({
         type: "info",
         icon: "challenge",
         title: "⚔️ New Challenge!",
-        message: `${data.fromUsername} challenged you to a match!`,
-        duration: 6000,
+        message: `${data.fromUsername} challenged you to a ${
+          gameType === "QUIZ_SPRINT" ? "Quiz Sprint" : "Match Pairs"
+        } match.`,
+        duration: 10000,
+        actions: [
+          {
+            label: "Accept",
+            onClick: () => {
+              setWaiting(true);
+              setGameStatus("waiting");
+              setPendingMode("friend");
+              setGameType(gameType);
+              respondToChallenge(true, data.fromUserId, user.id, gameType);
+              navigate("/game");
+            },
+          },
+          {
+            label: "Decline",
+            variant: "danger",
+            onClick: () => {
+              respondToChallenge(false, data.fromUserId, user.id, gameType);
+            },
+          },
+        ],
       });
     });
 
@@ -77,11 +102,51 @@ export default function NotificationListener() {
                 .markNotificationsAsRead([notification._id])
                 .catch(() => {});
             } else if (notification.type === "challenge") {
-              // Don't show toast here as Challenge events use socket events
-              // Mark as read
-              await userAPI
-                .markNotificationsAsRead([notification._id])
-                .catch(() => {});
+              // Keep challenge unread in bell dropdown and show one actionable toast.
+              if (!shownChallengeNotifications.current.has(notification._id)) {
+                shownChallengeNotifications.current.add(notification._id);
+                const gameType = notification.gameType || "QUIZ_SPRINT";
+
+                addToast({
+                  type: "info",
+                  icon: "challenge",
+                  title: "⚔️ Challenge Pending",
+                  message: `${notification.fromUsername} challenged you to a ${
+                    gameType === "QUIZ_SPRINT" ? "Quiz Sprint" : "Match Pairs"
+                  } match.`,
+                  duration: 10000,
+                  actions: [
+                    {
+                      label: "Accept",
+                      onClick: () => {
+                        setWaiting(true);
+                        setGameStatus("waiting");
+                        setPendingMode("friend");
+                        setGameType(gameType);
+                        respondToChallenge(
+                          true,
+                          notification.fromUserId,
+                          user.id,
+                          gameType,
+                        );
+                        navigate("/game");
+                      },
+                    },
+                    {
+                      label: "Decline",
+                      variant: "danger",
+                      onClick: () => {
+                        respondToChallenge(
+                          false,
+                          notification.fromUserId,
+                          user.id,
+                          gameType,
+                        );
+                      },
+                    },
+                  ],
+                });
+              }
             }
           }
         }

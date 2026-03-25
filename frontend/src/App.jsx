@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -26,6 +26,7 @@ import "./index.css";
 function App() {
   const { isAuthenticated, hydrateSession, logout, isDarkMode } =
     useAuthStore();
+  const [isHydrating, setIsHydrating] = useState(true);
 
   useEffect(() => {
     const hydrate = async () => {
@@ -33,6 +34,7 @@ function App() {
       const onAuthCallback = window.location.pathname === "/auth-callback";
 
       if (!userRaw && !onAuthCallback) {
+        setIsHydrating(false);
         return;
       }
 
@@ -73,13 +75,44 @@ function App() {
         localStorage.setItem("user", JSON.stringify(mergedUser));
         hydrateSession(mergedUser, "cookie");
       } catch (error) {
-        localStorage.removeItem("user");
-        logout();
+        const status = error?.response?.status;
+        const isUnauthorized = status === 401 || status === 403;
+
+        if (isUnauthorized) {
+          localStorage.removeItem("user");
+          logout();
+        } else if (userRaw) {
+          // Keep local session on temporary network/server issues.
+          try {
+            const localUser = JSON.parse(userRaw);
+            hydrateSession(localUser, "cookie");
+          } catch (_) {
+            // Keep existing state if local data is malformed.
+          }
+        }
+      } finally {
+        setIsHydrating(false);
       }
     };
 
     hydrate();
   }, []);
+
+  if (isHydrating) {
+    return (
+      <div
+        className={`min-h-screen flex items-center justify-center ${
+          isDarkMode
+            ? "dark bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900"
+            : "bg-gradient-to-br from-slate-50 via-white to-emerald-50"
+        }`}
+      >
+        <div className="card text-center max-w-sm w-full">
+          <p className="text-slate-500">Restoring your session...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <Router

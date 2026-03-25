@@ -2,17 +2,20 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 
 const AUTH_COOKIE_NAME = "auth_token";
+const AUTH_TOKEN_TTL = process.env.AUTH_TOKEN_TTL || "7d";
+const AUTH_COOKIE_MAX_AGE_MS =
+  Number(process.env.AUTH_COOKIE_MAX_AGE_MS) || 7 * 24 * 60 * 60 * 1000;
 
 const generateToken = (userId, username) =>
   jwt.sign({ userId, username }, process.env.JWT_SECRET, {
-    expiresIn: "15m",
+    expiresIn: AUTH_TOKEN_TTL,
   });
 
 const authCookieOptions = {
   httpOnly: true,
   secure: process.env.NODE_ENV === "production",
   sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-  maxAge: 15 * 60 * 1000,
+  maxAge: AUTH_COOKIE_MAX_AGE_MS,
 };
 
 const setAuthCookie = (res, token) => {
@@ -170,6 +173,11 @@ const getCurrentAuthUser = async (req, res) => {
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
+
+    // Refresh auth cookie on successful session checks (sliding session).
+    const refreshedToken = generateToken(user._id, user.username);
+    setAuthCookie(res, refreshedToken);
+
     return res.json({ user: serializeUser(user) });
   } catch (error) {
     return res.status(500).json({ error: error.message });

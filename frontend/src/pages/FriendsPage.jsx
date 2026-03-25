@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore, useGameStore } from "../store/gameStore";
 import { authAPI, userAPI } from "../api/client";
@@ -22,12 +22,14 @@ export default function FriendsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [searchError, setSearchError] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [challengingFriendId, setChallengingFriendId] = useState(null);
   const [isGameModeModalOpen, setIsGameModeModalOpen] = useState(false);
   const [selectedFriendForChallenge, setSelectedFriendForChallenge] =
     useState(null);
+  const searchInputRef = useRef(null);
 
   useEffect(() => {
     if (!user) {
@@ -84,7 +86,8 @@ export default function FriendsPage() {
       setFriends(uniqueFriends);
       setMessage("");
     } catch (error) {
-      setMessage("Failed to load friends");
+      setFriends([]);
+      setMessage("");
       console.error(error);
     }
   };
@@ -98,25 +101,43 @@ export default function FriendsPage() {
     }
   };
 
-  const handleSearch = async (query) => {
+  const handleSearch = (query) => {
     setSearchQuery(query);
+  };
+
+  useEffect(() => {
+    const query = searchQuery.trim();
 
     if (query.length < 2) {
       setSearchResults([]);
+      setSearchError("");
+      setIsSearching(false);
       return;
     }
 
-    try {
-      setIsSearching(true);
-      const response = await userAPI.searchUsers(query);
-      setSearchResults(response.data || []);
-    } catch (error) {
-      console.error("Search failed:", error);
-      setSearchResults([]);
-    } finally {
-      setIsSearching(false);
-    }
-  };
+    const debounceTimer = setTimeout(async () => {
+      try {
+        setIsSearching(true);
+        setSearchError("");
+        const response = await userAPI.searchUsers(query);
+        setSearchResults(response.data || []);
+      } catch (error) {
+        const status = error?.response?.status;
+        if (status === 429) {
+          setSearchError(
+            "Too many searches. Please wait a few seconds and try again.",
+          );
+        } else {
+          setSearchError("Search failed. Please try again.");
+        }
+        setSearchResults([]);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 350);
+
+    return () => clearTimeout(debounceTimer);
+  }, [searchQuery]);
 
   const handleSendFriendRequest = async (userId) => {
     try {
@@ -244,6 +265,7 @@ export default function FriendsPage() {
             </div>
             <div>
               <input
+                ref={searchInputRef}
                 type="text"
                 value={searchQuery}
                 onChange={(e) => handleSearch(e.target.value)}
@@ -268,22 +290,22 @@ export default function FriendsPage() {
                         isDarkMode ? "text-slate-400" : "text-slate-500"
                       }`}
                     >
-                      No users found
+                      {searchError || "No users found"}
                     </p>
                   )}
 
                   {searchResults.map((result) => (
                     <div
                       key={result._id}
-                      className={`flex items-center justify-between p-3 rounded-lg border ${
+                      className={`flex items-center justify-between gap-3 p-3 rounded-lg border ${
                         isDarkMode
                           ? "border-slate-700 bg-slate-700/30"
                           : "border-slate-200 bg-slate-50"
                       }`}
                     >
-                      <div>
+                      <div className="min-w-0">
                         <p
-                          className={`font-semibold ${
+                          className={`font-semibold break-all ${
                             isDarkMode ? "text-slate-100" : "text-slate-800"
                           }`}
                         >
@@ -371,8 +393,18 @@ export default function FriendsPage() {
                 className={`card text-center py-8 ${isDarkMode ? "dark" : ""}`}
               >
                 <p className={isDarkMode ? "text-slate-400" : "text-slate-600"}>
-                  No friends yet. Add one to get started!
+                  No friends yet. Add friends to get started.
                 </p>
+                <button
+                  onClick={() => searchInputRef.current?.focus()}
+                  className={`mt-4 px-4 py-2 rounded-lg font-semibold transition ${
+                    isDarkMode
+                      ? "bg-blue-700 hover:bg-blue-600 text-blue-100"
+                      : "bg-emerald-600 hover:bg-emerald-700 text-white"
+                  }`}
+                >
+                  Add Friends
+                </button>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -383,10 +415,10 @@ export default function FriendsPage() {
                   return (
                     <div
                       key={friend.userId}
-                      className={`card ${isDarkMode ? "dark" : ""}`}
+                      className={`card overflow-hidden ${isDarkMode ? "dark" : ""}`}
                     >
-                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                        <div className="flex items-center gap-4 flex-1">
+                      <div className="flex flex-col gap-4">
+                        <div className="flex items-center gap-4 min-w-0">
                           <div className="relative">
                             <div
                               className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold ${
@@ -410,9 +442,9 @@ export default function FriendsPage() {
                             />
                           </div>
 
-                          <div className="flex-1">
+                          <div className="flex-1 min-w-0">
                             <h3
-                              className={`font-semibold ${isDarkMode ? "text-slate-100" : "text-slate-800"}`}
+                              className={`font-semibold break-all ${isDarkMode ? "text-slate-100" : "text-slate-800"}`}
                             >
                               {friend.username}
                             </h3>
@@ -429,7 +461,7 @@ export default function FriendsPage() {
                           </div>
                         </div>
 
-                        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                        <div className="flex flex-wrap gap-2 w-full">
                           <button
                             onClick={() => handleChallengeFriend(friend)}
                             disabled={
@@ -437,7 +469,7 @@ export default function FriendsPage() {
                               !isOnline ||
                               challengingFriendId === friend.userId
                             }
-                            className={`px-4 py-2 rounded-lg font-semibold transition text-sm w-full sm:w-auto ${
+                            className={`px-4 py-2 rounded-lg font-semibold transition text-sm w-full sm:w-auto break-words ${
                               !isOnline || loading
                                 ? isDarkMode
                                   ? "bg-slate-700 text-slate-500 cursor-not-allowed"
@@ -454,7 +486,7 @@ export default function FriendsPage() {
                           <button
                             onClick={() => handleRemoveFriend(friend.userId)}
                             disabled={loading}
-                            className={`px-4 py-2 rounded-lg font-semibold transition text-sm w-full sm:w-auto ${
+                            className={`px-4 py-2 rounded-lg font-semibold transition text-sm w-full sm:w-auto break-words ${
                               isDarkMode
                                 ? "bg-red-900/50 hover:bg-red-800/70 text-red-200"
                                 : "bg-red-100 hover:bg-red-200 text-red-700"

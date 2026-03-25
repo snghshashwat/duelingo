@@ -34,7 +34,9 @@ export default function FriendRequestsPage() {
       setSentRequests(sentRes.data || []);
       setMessage("");
     } catch (error) {
-      setMessage("Failed to load friend requests");
+      setPendingRequests([]);
+      setSentRequests([]);
+      setMessage("");
       console.error(error);
     } finally {
       setLoading(false);

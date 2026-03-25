@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore, useGameStore } from "../store/gameStore";
 import {
@@ -10,6 +10,7 @@ import {
   onPairsRoundSent,
   onPairsAttemptResult,
   onScoreUpdate,
+  onAnswerFeedback,
   onMatchResult,
   onMatchAborted,
   onWaitingForOpponent,
@@ -53,6 +54,10 @@ export default function GamePage() {
   const [selectedEnglish, setSelectedEnglish] = useState(null);
   const [selectedItalian, setSelectedItalian] = useState(null);
   const [lastAttemptFeedback, setLastAttemptFeedback] = useState("");
+  const [quizSelectedOption, setQuizSelectedOption] = useState(null);
+  const [quizFeedback, setQuizFeedback] = useState(null);
+  const [pairsFeedback, setPairsFeedback] = useState(null);
+  const pendingPairSelectionRef = useRef(null);
   const navigate = useNavigate();
 
   const isQuizMode = gameType === "QUIZ_SPRINT";
@@ -94,6 +99,7 @@ export default function GamePage() {
 
       setGameStatus("in_progress");
       setQuestion(data.question, data.questionIndex);
+      setQuizSelectedOption(null);
       setIsWaiting(false);
     });
 
@@ -104,6 +110,8 @@ export default function GamePage() {
       setPairsMatches(data.matchedEnglish || [], data.matchedItalian || []);
       setSelectedEnglish(null);
       setSelectedItalian(null);
+      pendingPairSelectionRef.current = null;
+      setPairsFeedback(null);
       setLastAttemptFeedback("");
       setIsWaiting(false);
     });
@@ -113,6 +121,26 @@ export default function GamePage() {
       setLastAttemptFeedback(
         data.isCorrect ? "Correct match!" : "Wrong pair (-1)",
       );
+
+      if (pendingPairSelectionRef.current) {
+        setPairsFeedback({
+          ...pendingPairSelectionRef.current,
+          isCorrect: data.isCorrect,
+        });
+      }
+
+      pendingPairSelectionRef.current = null;
+
+      setTimeout(() => {
+        setPairsFeedback(null);
+      }, 650);
+    });
+
+    onAnswerFeedback((data) => {
+      setQuizFeedback(data?.isCorrect ? "correct" : "wrong");
+      setTimeout(() => {
+        setQuizFeedback(null);
+      }, 500);
     });
 
     onScoreUpdate((data) => {
@@ -173,6 +201,10 @@ export default function GamePage() {
 
   useEffect(() => {
     if (isPairsMode && selectedEnglish && selectedItalian && matchId && user) {
+      pendingPairSelectionRef.current = {
+        englishWord: selectedEnglish,
+        italianWord: selectedItalian,
+      };
       submitPairAttempt(matchId, user.id, selectedEnglish, selectedItalian);
       setSelectedEnglish(null);
       setSelectedItalian(null);
@@ -180,9 +212,10 @@ export default function GamePage() {
   }, [selectedEnglish, selectedItalian, isPairsMode, matchId, user]);
 
   const handleSubmitQuizAnswer = (answer) => {
-    if (!matchId || !user) {
+    if (!matchId || !user || quizSelectedOption) {
       return;
     }
+    setQuizSelectedOption(answer);
     submitAnswer(matchId, user.id, answer);
   };
 
@@ -307,7 +340,15 @@ export default function GamePage() {
                 <button
                   key={index}
                   onClick={() => handleSubmitQuizAnswer(option)}
-                  className="p-3 sm:p-4 text-sm sm:text-base rounded-lg font-semibold border border-slate-300 bg-white hover:bg-emerald-50 hover:border-emerald-400 transition"
+                  disabled={Boolean(quizSelectedOption)}
+                  className={`p-3 sm:p-4 text-sm sm:text-base rounded-lg font-semibold border transition ${
+                    quizSelectedOption === option && quizFeedback === "correct"
+                      ? "answer-correct border-emerald-500 bg-emerald-50"
+                      : quizSelectedOption === option &&
+                          quizFeedback === "wrong"
+                        ? "answer-wrong border-red-500 bg-red-50"
+                        : "border-slate-300 bg-white hover:bg-emerald-50 hover:border-emerald-400"
+                  } ${quizSelectedOption ? "cursor-not-allowed" : ""}`}
                 >
                   {option}
                 </button>
@@ -342,9 +383,15 @@ export default function GamePage() {
                         className={`w-full text-left px-4 py-2 rounded-lg border transition ${
                           isMatched
                             ? "bg-emerald-100 border-emerald-200 text-emerald-700 cursor-not-allowed"
-                            : isSelected
-                              ? "bg-sky-100 border-sky-400"
-                              : "bg-white border-slate-300 hover:bg-sky-50"
+                            : pairsFeedback?.englishWord === word &&
+                                pairsFeedback?.isCorrect
+                              ? "answer-correct border-emerald-500 bg-emerald-50"
+                              : pairsFeedback?.englishWord === word &&
+                                  pairsFeedback?.isCorrect === false
+                                ? "answer-wrong border-red-500 bg-red-50"
+                                : isSelected
+                                  ? "bg-sky-100 border-sky-400"
+                                  : "bg-white border-slate-300 hover:bg-sky-50"
                         }`}
                       >
                         {word}
@@ -368,9 +415,15 @@ export default function GamePage() {
                         className={`w-full text-left px-4 py-2 rounded-lg border transition ${
                           isMatched
                             ? "bg-violet-100 border-violet-200 text-violet-700 cursor-not-allowed"
-                            : isSelected
-                              ? "bg-amber-100 border-amber-400"
-                              : "bg-white border-slate-300 hover:bg-amber-50"
+                            : pairsFeedback?.italianWord === word &&
+                                pairsFeedback?.isCorrect
+                              ? "answer-correct border-emerald-500 bg-emerald-50"
+                              : pairsFeedback?.italianWord === word &&
+                                  pairsFeedback?.isCorrect === false
+                                ? "answer-wrong border-red-500 bg-red-50"
+                                : isSelected
+                                  ? "bg-amber-100 border-amber-400"
+                                  : "bg-white border-slate-300 hover:bg-amber-50"
                         }`}
                       >
                         {word}

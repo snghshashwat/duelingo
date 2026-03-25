@@ -83,3 +83,48 @@ body {
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
+
+@keyframes answerPop {
+  0% {
+    transform: scale(0.98);
+  }
+  40% {
+    transform: scale(1.02);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes answerWobble {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-4px);
+  }
+  40% {
+    transform: translateX(4px);
+  }
+  60% {
+    transform: translateX(-3px);
+  }
+  80% {
+    transform: translateX(3px);
+  }
+}
+
+.answer-correct {
+  animation: answerPop 0.45s ease;
+  box-shadow:
+    0 0 0 2px rgba(16, 185, 129, 0.2),
+    0 0 18px rgba(16, 185, 129, 0.35);
+}
+
+.answer-wrong {
+  animation: answerWobble 0.45s ease;
+  box-shadow:
+    0 0 0 2px rgba(239, 68, 68, 0.22),
+    0 0 20px rgba(239, 68, 68, 0.4);
+}

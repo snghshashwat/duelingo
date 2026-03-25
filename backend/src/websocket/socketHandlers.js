@@ -227,6 +227,17 @@ const initializeSocket = (io) => {
         return;
       }
 
+      if (
+        !socket.userId ||
+        socket.userId.toString() !== userId.toString() ||
+        socket.username !== username
+      ) {
+        socket.emit("challenge_error", {
+          message: "Unauthorized matchmaking request",
+        });
+        return;
+      }
+
       // Fetch user to get language preferences
       let nativeLanguage = "English";
       let learningLanguage = "Italian";
@@ -310,6 +321,16 @@ const initializeSocket = (io) => {
         ) {
           socket.emit("challenge_error", {
             message: "Invalid challenge payload",
+          });
+          return;
+        }
+
+        if (
+          !socket.userId ||
+          socket.userId.toString() !== fromUserId.toString()
+        ) {
+          socket.emit("challenge_error", {
+            message: "Unauthorized challenge request",
           });
           return;
         }
@@ -399,6 +420,16 @@ const initializeSocket = (io) => {
           return;
         }
 
+        if (
+          !socket.userId ||
+          socket.userId.toString() !== toUserId.toString()
+        ) {
+          socket.emit("challenge_error", {
+            message: "Unauthorized challenge response",
+          });
+          return;
+        }
+
         const challengerOnline = gameManager.getOnlineUser(fromUserId);
         const challengedOnline = gameManager.getOnlineUser(toUserId);
 
@@ -428,6 +459,11 @@ const initializeSocket = (io) => {
           return;
         }
 
+        challengerSocket.emit("challenge_accepted", {
+          byUserId: toUserId,
+          gameType,
+        });
+
         gameManager.removeFromQueue(fromUserId);
         gameManager.removeFromQueue(toUserId);
 
@@ -453,6 +489,10 @@ const initializeSocket = (io) => {
       }
 
       if (!isValidShortString(answer, 200)) {
+        return;
+      }
+
+      if (!socket.userId || socket.userId.toString() !== userId.toString()) {
         return;
       }
 
@@ -483,8 +523,15 @@ const initializeSocket = (io) => {
         player2Attempts: result.player2Attempts,
       });
 
+      io.to(socket.id).emit("answer_feedback", {
+        isCorrect: result.isCorrect,
+        submittedAnswer: answer,
+      });
+
       if (result.nextQuestion) {
-        io.to(socket.id).emit("question_sent", result.nextQuestion);
+        setTimeout(() => {
+          io.to(socket.id).emit("question_sent", result.nextQuestion);
+        }, 350);
       }
     });
 
@@ -499,6 +546,10 @@ const initializeSocket = (io) => {
         !isValidShortString(englishWord, 80) ||
         !isValidShortString(italianWord, 80)
       ) {
+        return;
+      }
+
+      if (!socket.userId || socket.userId.toString() !== userId.toString()) {
         return;
       }
 

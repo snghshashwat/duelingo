@@ -247,7 +247,7 @@ export default function FriendsPage() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => handleSearch(e.target.value)}
-                placeholder="Search by username or email"
+                placeholder="Search by username or email (email stays private)"
                 className={`input-field w-full ${isDarkMode ? "dark" : ""}`}
               />
               {searchQuery.length > 0 && (
@@ -294,7 +294,7 @@ export default function FriendsPage() {
                             isDarkMode ? "text-slate-400" : "text-slate-500"
                           }`}
                         >
-                          {result.email}
+                          Rating: {result.rating}
                         </p>
                       </div>
 

@@ -465,7 +465,7 @@ const searchUsers = async (req, res) => {
       _id: { $ne: req.userId }, // Exclude self
     })
       .limit(20)
-      .select("_id username email rating avatarUrl");
+      .select("_id username rating avatarUrl");
 
     // Add friend status for each result
     const friendIds = new Set(

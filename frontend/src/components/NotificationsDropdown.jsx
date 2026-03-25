@@ -11,8 +11,14 @@ export default function NotificationsDropdown() {
     useGameStore();
   const [isOpen, setIsOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
+  const [actionStates, setActionStates] = useState({});
   const [loading, setLoading] = useState(false);
   const dropdownRef = useRef(null);
+
+  const setNotificationState = (notificationId, state) => {
+    if (!notificationId) return;
+    setActionStates((prev) => ({ ...prev, [notificationId]: state }));
+  };
 
   useEffect(() => {
     if (user) {
@@ -39,21 +45,42 @@ export default function NotificationsDropdown() {
   const handleAcceptChallenge = async (notification) => {
     try {
       setLoading(true);
+      const challengeType = notification.gameType || "QUIZ_SPRINT";
       setWaiting(true);
       setGameStatus("waiting");
       setPendingMode("friend");
-      setGameType(notification.gameType);
-      respondToChallenge(
-        true,
-        notification.fromUserId,
-        user.id,
-        notification.gameType,
-      );
+      setGameType(challengeType);
+      respondToChallenge(true, notification.fromUserId, user.id, challengeType);
+      await userAPI.markNotificationsAsRead([notification._id]).catch(() => {});
+      setNotificationState(notification._id, "accepted");
       await loadNotifications();
       setIsOpen(false);
       navigate("/game");
     } catch (error) {
       console.error("Failed to accept challenge:", error);
+      setNotificationState(notification._id, "failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeclineChallenge = async (notification) => {
+    try {
+      setLoading(true);
+      const challengeType = notification.gameType || "QUIZ_SPRINT";
+      respondToChallenge(
+        false,
+        notification.fromUserId,
+        user.id,
+        challengeType,
+      );
+      await userAPI.markNotificationsAsRead([notification._id]).catch(() => {});
+      setNotificationState(notification._id, "declined");
+      await loadNotifications();
+    } catch (error) {
+      console.error("Failed to decline challenge:", error);
+      setNotificationState(notification._id, "failed");
+    } finally {
       setLoading(false);
     }
   };
@@ -62,9 +89,12 @@ export default function NotificationsDropdown() {
     try {
       setLoading(true);
       await userAPI.acceptFriendRequest(notification.fromUserId);
+      await userAPI.markNotificationsAsRead([notification._id]).catch(() => {});
+      setNotificationState(notification._id, "accepted");
       await loadNotifications();
     } catch (error) {
       console.error("Failed to accept friend request:", error);
+      setNotificationState(notification._id, "failed");
     } finally {
       setLoading(false);
     }
@@ -74,9 +104,12 @@ export default function NotificationsDropdown() {
     try {
       setLoading(true);
       await userAPI.declineFriendRequest(notification.fromUserId);
+      await userAPI.markNotificationsAsRead([notification._id]).catch(() => {});
+      setNotificationState(notification._id, "declined");
       await loadNotifications();
     } catch (error) {
       console.error("Failed to decline friend request:", error);
+      setNotificationState(notification._id, "failed");
     } finally {
       setLoading(false);
     }
@@ -182,6 +215,30 @@ export default function NotificationsDropdown() {
                       : ""
                   } ${isDarkMode ? "border-slate-600" : "border-slate-100"}`}
                 >
+                  {actionStates[notification._id] && (
+                    <p
+                      className={`text-xs mb-2 font-semibold ${
+                        actionStates[notification._id] === "accepted"
+                          ? isDarkMode
+                            ? "text-green-300"
+                            : "text-green-700"
+                          : actionStates[notification._id] === "declined"
+                            ? isDarkMode
+                              ? "text-amber-300"
+                              : "text-amber-700"
+                            : isDarkMode
+                              ? "text-red-300"
+                              : "text-red-700"
+                      }`}
+                    >
+                      {actionStates[notification._id] === "accepted"
+                        ? "Status: accepted"
+                        : actionStates[notification._id] === "declined"
+                          ? "Status: declined"
+                          : "Status: failed"}
+                    </p>
+                  )}
+
                   {/* Friend Request */}
                   {notification.type === "friend_request" && (
                     <div>
@@ -204,7 +261,9 @@ export default function NotificationsDropdown() {
                           onClick={() =>
                             handleAcceptFriendRequest(notification)
                           }
-                          disabled={loading}
+                          disabled={
+                            loading || Boolean(actionStates[notification._id])
+                          }
                           className={`flex-1 px-3 py-1 rounded text-sm font-semibold transition ${
                             isDarkMode
                               ? "bg-green-700 hover:bg-green-600 text-green-100"
@@ -217,7 +276,9 @@ export default function NotificationsDropdown() {
                           onClick={() =>
                             handleDeclineFriendRequest(notification)
                           }
-                          disabled={loading}
+                          disabled={
+                            loading || Boolean(actionStates[notification._id])
+                          }
                           className={`flex-1 px-3 py-1 rounded text-sm font-semibold transition ${
                             isDarkMode
                               ? "bg-slate-600 hover:bg-slate-500 text-slate-100"
@@ -254,7 +315,9 @@ export default function NotificationsDropdown() {
                       <div className="flex gap-2">
                         <button
                           onClick={() => handleAcceptChallenge(notification)}
-                          disabled={loading}
+                          disabled={
+                            loading || Boolean(actionStates[notification._id])
+                          }
                           className={`flex-1 px-3 py-1 rounded text-sm font-semibold transition ${
                             isDarkMode
                               ? "bg-purple-700 hover:bg-purple-600 text-purple-100"
@@ -264,14 +327,17 @@ export default function NotificationsDropdown() {
                           Accept
                         </button>
                         <button
-                          onClick={() => setIsOpen(false)}
+                          onClick={() => handleDeclineChallenge(notification)}
+                          disabled={
+                            loading || Boolean(actionStates[notification._id])
+                          }
                           className={`flex-1 px-3 py-1 rounded text-sm font-semibold transition ${
                             isDarkMode
                               ? "bg-slate-600 hover:bg-slate-500 text-slate-100"
                               : "bg-slate-300 hover:bg-slate-400 text-slate-700"
                           }`}
                         >
-                          Later
+                          Decline
                         </button>
                       </div>
                     </div>

@@ -138,6 +138,12 @@ export const onScoreUpdate = (callback) => {
   }
 };
 
+export const onAnswerFeedback = (callback) => {
+  if (socket) {
+    socket.on("answer_feedback", callback);
+  }
+};
+
 export const onMatchResult = (callback) => {
   if (socket) {
     socket.on("match_result", callback);
@@ -168,6 +174,12 @@ export const onChallengeDeclined = (callback) => {
   }
 };
 
+export const onChallengeAccepted = (callback) => {
+  if (socket) {
+    socket.on("challenge_accepted", callback);
+  }
+};
+
 export const onChallengeError = (callback) => {
   if (socket) {
     socket.on("challenge_error", callback);
@@ -190,11 +202,13 @@ export const offAll = () => {
     socket.off("pairs_round_sent");
     socket.off("pairs_attempt_result");
     socket.off("score_update");
+    socket.off("answer_feedback");
     socket.off("match_result");
     socket.off("match_aborted");
     socket.off("waiting_for_opponent");
     socket.off("challenge_received");
     socket.off("challenge_sent");
+    socket.off("challenge_accepted");
     socket.off("challenge_declined");
     socket.off("challenge_error");
   }

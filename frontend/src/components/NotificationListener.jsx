@@ -1,11 +1,21 @@
 import React, { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/gameStore";
+import { useGameStore } from "../store/gameStore";
 import { useToastStore } from "../store/toastStore";
-import { initializeSocket, onChallengeReceived, offAll } from "../api/socket";
+import {
+  initializeSocket,
+  onChallengeReceived,
+  onChallengeAccepted,
+  offAll,
+} from "../api/socket";
 import { userAPI } from "../api/client";
 
 export default function NotificationListener() {
+  const navigate = useNavigate();
   const { user } = useAuthStore();
+  const { setWaiting, setGameStatus, setPendingMode, setGameType } =
+    useGameStore();
   const { addToast } = useToastStore();
 
   useEffect(() => {
@@ -23,6 +33,14 @@ export default function NotificationListener() {
         message: `${data.fromUsername} challenged you to a match!`,
         duration: 6000,
       });
+    });
+
+    onChallengeAccepted((data) => {
+      setWaiting(true);
+      setGameStatus("waiting");
+      setPendingMode("friend");
+      setGameType(data?.gameType || "QUIZ_SPRINT");
+      navigate("/game");
     });
 
     // Poll for new friend requests and notifications
@@ -82,7 +100,15 @@ export default function NotificationListener() {
       clearInterval(notificationInterval);
       offAll();
     };
-  }, [user, addToast]);
+  }, [
+    user,
+    addToast,
+    navigate,
+    setGameStatus,
+    setGameType,
+    setPendingMode,
+    setWaiting,
+  ]);
 
   return null;
 }

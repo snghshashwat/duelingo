@@ -4,6 +4,8 @@ import { useAuthStore } from "../store/gameStore";
 import { authAPI } from "../api/client";
 
 const LANGUAGES = ["English", "Italian", "French", "Spanish", "German"];
+const PASSWORD_MIN_LENGTH = 8;
+const PASSWORD_MAX_LENGTH = 128;
 
 export default function SignupPage() {
   const [username, setUsername] = useState("");
@@ -19,12 +21,28 @@ export default function SignupPage() {
   const apiOrigin =
     import.meta.env.VITE_API_BASE_URL || "http://localhost:5051";
 
+  const validatePassword = (value) => {
+    if (
+      value.length < PASSWORD_MIN_LENGTH ||
+      value.length > PASSWORD_MAX_LENGTH
+    ) {
+      return `Password must be ${PASSWORD_MIN_LENGTH}-${PASSWORD_MAX_LENGTH} characters`;
+    }
+    return "";
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
     if (password !== confirmPassword) {
       setError("Passwords do not match");
+      return;
+    }
+
+    const passwordError = validatePassword(password);
+    if (passwordError) {
+      setError(passwordError);
       return;
     }
 
@@ -45,7 +63,15 @@ export default function SignupPage() {
       signup(user, "cookie");
       navigate("/");
     } catch (err) {
-      setError(err.response?.data?.error || "Signup failed");
+      const apiError = err.response?.data?.error;
+      if (
+        typeof apiError === "string" &&
+        apiError.toLowerCase().includes("password")
+      ) {
+        setError("Password must be 8-128 characters");
+      } else {
+        setError(apiError || "Signup failed");
+      }
     } finally {
       setLoading(false);
     }
@@ -189,8 +215,18 @@ export default function SignupPage() {
                   : "bg-slate-50 border-slate-300 text-slate-900"
               }`}
               placeholder="Password"
+              minLength={PASSWORD_MIN_LENGTH}
+              maxLength={PASSWORD_MAX_LENGTH}
+              title="Password must be 8-128 characters"
               required
             />
+            <p
+              className={`mt-1 text-xs ${
+                isDarkMode ? "text-slate-400" : "text-slate-600"
+              }`}
+            >
+              Use 8-128 characters.
+            </p>
           </div>
 
           <div>
